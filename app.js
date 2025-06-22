@@ -24,7 +24,11 @@ mongoose.connect('mongodb+srv://debadrita:12345@lmsapp.40tojuu.mongodb.net/?retr
 })
 
 app.use(bodyParser.json())
-app.use(cors())
+app.use(cors({
+  origin: 'http://localhost:3000', // allow frontend to talk to backend
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
 
 app.use('/user',userRoute)
 app.use('/course',courseRoute)
