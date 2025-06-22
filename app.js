@@ -7,7 +7,7 @@ const cors = require('cors')
 
 app.use(fileUpload({
     useTempFiles : true,
-    //tempFileDir : '/tmp/'
+    tempFileDir : '/tmp/'
 }))
 
 const userRoute = require('./routes/user')
@@ -24,12 +24,7 @@ mongoose.connect('mongodb+srv://debadrita:12345@lmsapp.40tojuu.mongodb.net/?retr
 })
 
 app.use(bodyParser.json())
-app.use(cors({
-  origin: ['http://localhost:3000'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-}));
+app.use(cors());
 
 app.use('/user',userRoute)
 app.use('/course',courseRoute)
