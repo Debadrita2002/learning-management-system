@@ -77,7 +77,7 @@ router.get('/student-detail/:id',checkAuth,(req,res)=>{
   const token = req.headers.authorization.split(" ")[1]
   const verify=jwt.verify(token,'debadrita my name 123' )
 
-  student.findById(req.params.id)
+  Student.findById(req.params.id)
   .select('_id uId fullName phone email address courseId imageUrl imageId')
   .then(result=>{
     if (!result) {
