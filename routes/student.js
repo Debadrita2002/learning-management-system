@@ -80,6 +80,9 @@ router.get('/student-detail/:id',checkAuth,(req,res)=>{
   student.findById(req.params.id)
   .select('_id uId fullName phone email address courseId imageUrl imageId')
   .then(result=>{
+    if (!result) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
     Fee.find({uId:verify.uId,courseId:result.courseId,phone:result.phone})
     .then(feeData=>{
       res.status(200).json({
