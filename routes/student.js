@@ -5,6 +5,7 @@ const Student=require('../model/Student')
 const mongoose=require('mongoose')
 const jwt=require('jsonwebtoken')
 const cloudinary= require('cloudinary').v2;
+const Fee=require('../model/Fee')
 
 cloudinary.config({
   cloud_name:process.env.CLOUD_NAME,
@@ -62,6 +63,35 @@ router.get('/all-students',checkAuth,(req,res)=>{
   .then(result=>{
     res.status(200).json({
       students:result
+    })
+  })
+  .catch(err=>{
+    res.status(500).json({
+      error:err
+    })
+  })
+})
+
+//get student-detail by id
+router.get('/student-detail/:id',checkAuth,(req,res)=>{
+  const token = req.headers.authorization.split(" ")[1]
+  const verify=jwt.verify(token,'debadrita my name 123' )
+
+  student.findById(req.params.id)
+  .select('_id uId fullName phone email address courseId imageUrl imageId')
+  .then(result=>{
+    Fee.find({uId:verify.uId,courseId:result.courseId,phone:result.phone})
+    .then(feeData=>{
+      res.status(200).json({
+        studentDetail:result,
+        feeDetail:feeData
+      })
+    })
+    .catch(err=>{
+      console.log(err)
+      res.status(500).json({
+        error:err
+      })
     })
   })
   .catch(err=>{

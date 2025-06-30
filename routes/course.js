@@ -15,6 +15,7 @@ cloudinary.config({
 
 //signup-post request bcz data comiing from frontend
 router.post('/add-course',checkAuth,(req,res)=>{
+ 
   const token = req.headers.authorization.split(" ")[1]
   const verify=jwt.verify(token,'debadrita my name 123' )
   

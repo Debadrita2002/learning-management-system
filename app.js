@@ -22,7 +22,7 @@ mongoose.connect('mongodb+srv://debadrita:12345@lmsapp.40tojuu.mongodb.net/?retr
 .catch(err=>{
     console.log('err')
 })
-
+app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json())
 app.use(cors());
 
