@@ -230,7 +230,16 @@ router.get('/home',checkAuth,async(req,res)=>{
   try{
     const token = req.headers.authorization.split(" ")[1];
     const verify = jwt.verify(token, "debadrita my name 123");
-    const newCourses=Course.find({ uid: verify.uId }).sort({ natural: -1 }).limit(5)
+    const newCourses=await Course.find({ uid: verify.uId }).sort({ natural: -1 }).limit(5)
+    const newStudents=await Student.find({ uid: verify.uId }).sort({ natural: -1 }).limit(5)
+    const totalCourse= await Course.countDocuments({uid: verify.uId})
+    const totalStudent= await Student.countDocuments({uid: verify.uId})
+    res.status(200).json({
+      courses:newCourses,
+      students:newStudents,
+      totalCourse:totalCourse,
+      totalStudent:totalStudent
+    })
   }
   catch(err){
     res.status(500).json({
