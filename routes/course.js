@@ -89,40 +89,35 @@ router.get("/course-detail/:id", checkAuth, (req, res) => {
 });
 
 // delete course
-router.delete("/:id", checkAuth, (req, res) => {
-  const token = req.headers.authorization.split(" ")[1];
-  const verify = jwt.verify(token, "debadrita my name 123");
-  Course.findById(req.params.id).then((course) => {
-    console.log(course);
-    if (course.uId == verify.uId) {
-      //delete
-      Course.findByIdAndDelete(req.params.id)
-        .then((result) => {
-          cloudinary.uploader.destroy(course.imageId, (deletedImage) => {
-            Student.deleteMany({ courseId: req.params.id })
-            .then((data) => {
-              res.status(200).json({
-                result: result,
-              });
-            })
-            .catch((err) => {
-              res.status(500).json({
-                msg: err,
-              });
-            });
-          });
-        })
-        .catch((err) => {
-          res.status(500).json({
-            msg: err,
-          });
-        });
-    } else {
-      res.status(500).json({
-        msg: "bad nice",
-      });
+router.delete("/:id", checkAuth, async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    const verify = jwt.verify(token, "debadrita my name 123");
+
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found." });
     }
-  });
+
+    if (course.uId !== verify.uId) {
+      return res.status(403).json({ success: false, message: "Unauthorized to delete this course." });
+    }
+
+    const deletedCourse = await Course.findByIdAndDelete(req.params.id);
+
+    cloudinary.uploader.destroy(course.imageId, async () => {
+      await Student.deleteMany({ courseId: req.params.id });
+
+      return res.status(200).json({
+        success: true,
+        message: "Course deleted successfully",
+        result: deletedCourse
+      });
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, message: "Something went wrong", error: err });
+  }
 });
 
 //update course
