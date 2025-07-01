@@ -244,7 +244,7 @@ router.get('/home',checkAuth,async(req,res)=>{
       students:newStudents,
       totalCourse:totalCourse,
       totalStudent:totalStudent,
-      totalAmount:totalAmount
+      totalAmount:totalAmount.length>0 ? totalAmount[0].total :0
     })
   }
   catch(err){
