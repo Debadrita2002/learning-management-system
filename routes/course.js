@@ -231,7 +231,7 @@ router.get('/home',checkAuth,async(req,res)=>{
   try{
     const token = req.headers.authorization.split(" ")[1];
     const verify = jwt.verify(token, "debadrita my name 123");
-    const newCourses=await Course.find({ uid: verify.uId }).sort({ natural: -1 }).limit(5)
+    const newCourses=await Fee.find({ uid: verify.uId }).sort({ natural: -1 }).limit(5)
     const newStudents=await Student.find({ uid: verify.uId }).sort({ natural: -1 }).limit(5)
     const totalCourse= await Course.countDocuments({uid: verify.uId})
     const totalStudent= await Student.countDocuments({uid: verify.uId})
