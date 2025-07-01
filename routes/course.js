@@ -122,7 +122,13 @@ router.delete("/:id", checkAuth, (req, res) => {
         msg: "bad nice",
       });
     }
-  });
+  })
+  .catch(err=>{
+    console.log(err)
+    res.status(500).json({
+      error:err
+    })
+  })
 });
 
 //update course
@@ -218,5 +224,25 @@ router.get("/latest-courses", checkAuth, (req, res) => {
       });
     });
 });
+
+//home api
+router.get('/home',checkAuth,async(req,res)=>{
+  try{
+    const token = req.headers.authorization.split(" ")[1];
+    const verify = jwt.verify(token, "debadrita my name 123");
+    const newCourses=Course.find({ uid: verify.uId }).sort({ natural: -1 }).limit(5)
+  }
+  catch(err){
+    res.status(500).json({
+      error:err
+    })
+  }
+})
+
+
+
+
+
+
 
 module.exports = router;
