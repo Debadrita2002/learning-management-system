@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const cloudinary = require("cloudinary").v2;
 const Student = require("../model/Student");
+const Fee  = require("../model/Fee");
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -234,11 +235,16 @@ router.get('/home',checkAuth,async(req,res)=>{
     const newStudents=await Student.find({ uid: verify.uId }).sort({ natural: -1 }).limit(5)
     const totalCourse= await Course.countDocuments({uid: verify.uId})
     const totalStudent= await Student.countDocuments({uid: verify.uId})
+    const totalAmount= await Fee.aggregate([
+      {$match: {uId:verify.uId}},
+      {$group: {_id:null,total:{$sum:"$amount"}}}
+    ])
     res.status(200).json({
       courses:newCourses,
       students:newStudents,
       totalCourse:totalCourse,
-      totalStudent:totalStudent
+      totalStudent:totalStudent,
+      totalAmount:totalAmount
     })
   }
   catch(err){
