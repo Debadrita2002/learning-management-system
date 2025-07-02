@@ -216,32 +216,38 @@ router.get("/latest-courses", checkAuth, (req, res) => {
 });
 
 //home api
-router.get('/home',checkAuth,async(req,res)=>{
-  try{
+router.get('/home', checkAuth, async (req, res) => {
+  try {
     const token = req.headers.authorization.split(" ")[1];
     const verify = jwt.verify(token, "debadrita my name 123");
-    const newFees=await Fee.find({ uid: verify.uId }).sort({ natural: -1 }).limit(5)
-    const newStudents=await Student.find({ uid: verify.uId }).sort({ natural: -1 }).limit(5)
-    const totalCourse= await Course.countDocuments({uid: verify.uId})
-    const totalStudent= await Student.countDocuments({uid: verify.uId})
-    const totalAmount= await Fee.aggregate([
-      {$match: {uId:verify.uId}},
-      {$group: {_id:null,total:{$sum:"$amount"}}}
-    ])
+
+    // Consistent use of uId across all collections
+    const uId = verify.uId;
+
+    const [latestFees, latestStudents, totalCourse, totalStudent, feeAggregation] = await Promise.all([
+      Fee.find({ uId }).sort({ createdAt: -1 }).limit(5),
+      Student.find({ uId }).sort({ createdAt: -1 }).limit(5),
+      Course.countDocuments({ uId }),
+      Student.countDocuments({ uId }),
+      Fee.aggregate([
+        { $match: { uId } },
+        { $group: { _id: null, total: { $sum: "$amount" } } }
+      ])
+    ]);
+
     res.status(200).json({
-      fees:newFees,
-      students:newStudents,
-      totalCourse:totalCourse,
-      totalStudent:totalStudent,
-      totalAmount:totalAmount.length>0 ? totalAmount[0].total :0
-    })
+      fees: latestFees,
+      students: latestStudents,
+      totalCourse,
+      totalStudent,
+      totalAmount: feeAggregation.length > 0 ? feeAggregation[0].total : 0
+    });
+  } catch (err) {
+    console.error("Error in /home route:", err);
+    res.status(500).json({ error: "Internal Server Error", details: err.message });
   }
-  catch(err){
-    res.status(500).json({
-      error:err
-    })
-  }
-})
+});
+
 
 
 
