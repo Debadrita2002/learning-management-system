@@ -90,47 +90,36 @@ router.get("/course-detail/:id", checkAuth, (req, res) => {
 });
 
 // delete course
-router.delete("/:id", checkAuth, (req, res) => {
-  const token = req.headers.authorization.split(" ")[1];
-  const verify = jwt.verify(token, "debadrita my name 123");
-  Course.findById(req.params.id).then((course) => {
-    console.log(course);
-    if (course.uId == verify.uId) {
-      //delete
-      Course.findByIdAndDelete(req.params.id)
-        .then((result) => {
-          cloudinary.uploader.destroy(course.imageId, (deletedImage) => {
-            Student.deleteMany({ courseId: req.params.id })
-            .then((data) => {
-              res.status(200).json({
-                result: result,
-              });
-            })
-            .catch((err) => {
-              res.status(500).json({
-                msg: err,
-              });
-            });
-          });
-        })
-        .catch((err) => {
-          res.status(500).json({
-            msg: err,
-          });
-        });
-    } else {
-      res.status(500).json({
-        msg: "bad nice",
-      });
+// In routes/course.js
+router.delete('/:id', checkAuth, async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+    const verify = jwt.verify(token, "debadrita my name 123");
+
+    const course = await Course.findById(req.params.id);
+    if (!course) {
+      return res.status(404).json({ msg: "Course not found" });
     }
-  })
-  .catch(err=>{
-    console.log(err)
-    res.status(500).json({
-      error:err
-    })
-  })
+
+    if (String(course.uId) !== String(verify.uId)) {
+      return res.status(403).json({ msg: "Not authorized to delete this course" });
+    }
+
+    await Course.findByIdAndDelete(req.params.id);
+
+    // Await cloudinary deletion
+    await cloudinary.uploader.destroy(course.imageId);
+
+    // Delete related students
+    await Student.deleteMany({ courseId: req.params.id });
+
+    res.status(200).json({ msg: "Course deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting course:", err);
+    res.status(500).json({ msg: "Something went wrong", error: err.message });
+  }
 });
+
 
 //update course
 router.put("/:id", checkAuth, (req, res) => {
